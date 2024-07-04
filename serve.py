@@ -48,7 +48,7 @@ while (True):
     prediction = import_and_predict(image, model)
     #print(prediction)
 
-    confidence_threshold = 0.5  # Adjusted based on model evaluation
+    confidence_threshold = 0.51  # Adjusted based on model evaluation
 
     max_confidence_score = np.max(prediction)
     predicted_class_idx = np.argmax(prediction)
