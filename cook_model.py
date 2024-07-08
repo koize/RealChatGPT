@@ -106,29 +106,28 @@ model.add(MaxPool2D())
 
 model.add(Conv2D(64, 3, padding="same", activation="relu"))
 model.add(MaxPool2D())
-model.add(Dropout(0.4))
+model.add(Dropout(0.6))
 
 model.add(Flatten())
-model.add(Dense(128,activation="relu"))
+model.add(Dense(64,activation="relu"))
 model.add(Dense(2, activation="softmax"))
 
 model.summary()
 
 opt = Adam(learning_rate=0.0001)  # Adjusted learning rate
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min', restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='min', restore_best_weights=True)
 
 model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 tf.keras.models.save_model(model, 'D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.h5')
 class_weights = compute_class_weight('balanced', classes=np.unique(train_labels), y=train_labels)
 class_weights_dict = dict(enumerate(class_weights))
-history = model.fit(x_train, y_train, epochs=500, class_weight=class_weights_dict, validation_data=(x_val, y_val))
-
+history = model.fit(x_train, y_train, epochs=500, class_weight=class_weights_dict, validation_data=(x_val, y_val), callbacks=[early_stopping])
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
-epochs_range = range(500)
+epochs_range = range(len(acc))  # This adjusts the range to the actual number of epochs trained
 
 plt.figure(figsize=(15, 15))
 plt.subplot(2, 2, 1)
