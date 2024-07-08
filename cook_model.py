@@ -121,6 +121,7 @@ model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(
 tf.keras.models.save_model(model, 'D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.h5')
 class_weights = compute_class_weight('balanced', classes=np.unique(train_labels), y=train_labels)
 class_weights_dict = dict(enumerate(class_weights))
+class_weights_dict = {0: 1.05, 1: 1.0}  # Manually set class weights to 1.0 for both classes
 history = model.fit(x_train, y_train, epochs=500, class_weight=class_weights_dict, validation_data=(x_val, y_val), callbacks=[early_stopping])
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -143,12 +144,11 @@ plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
 
-predictions = model.predict_classes(val_images)
+predictions = model.predict(x_val)
 predictions = predictions.reshape(1,-1)[0]
 predictions = model.predict(test_images)
 predicted_classes = np.argmax(predictions, axis=1)
-true_classes = test_images
-
+true_classes = test_labels
 cm = confusion_matrix(true_classes, predicted_classes)
 sns.heatmap(cm, annot=True, fmt='d')
 print(classification_report(y_val, predictions, target_names = ['Apple (Class 0)','Watermelon (Class 1)']))
