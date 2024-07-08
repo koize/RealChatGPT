@@ -1,34 +1,62 @@
 from PIL import Image, ImageOps
-import tensorflow as tf
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 import cv2
 import numpy as np
 import os
 import sys
 
-
-
 label = ''
-
 frame = None
 
-def import_and_predict(image_data, model):
-    
-        size = (100,100)    
-        image = ImageOps.fit(image_data, size, Image.LANCZOS)
-        image = image.convert('RGB')
-        image = np.asarray(image)
-        image = (image.astype(np.float32) / 255.0)
-
-        img_reshape = image[np.newaxis,...]
-
-        prediction = model.predict(img_reshape)
+class CNNModel(nn.Module):
+    def __init__(self):
+        super(CNNModel, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(32, 32, 3, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
+        self.dropout = nn.Dropout(0.4)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(64 * 12 * 12, 128)
+        self.fc2 = nn.Linear(128, 2)
         
-        return prediction
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
+        x = self.dropout(x)
+        x = self.flatten(x)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
 
-model = tf.keras.models.load_model('D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.h5')
+def import_and_predict(image_data, model):
+    size = (100, 100)
+    image = ImageOps.fit(image_data, size, Image.LANCZOS)
+    image = image.convert('RGB')
+    image = np.asarray(image)
+    image = (image.astype(np.float32) / 255.0)
 
+    image = torch.tensor(image).permute(2, 0, 1).unsqueeze(0)  # Change HWC to CHW format and add batch dimension
+    image = image.to(device)
     
+    with torch.no_grad():
+        prediction = model(image)
+        prediction = F.softmax(prediction, dim=1)  # Apply softmax to get probabilities
+    
+    return prediction.cpu().numpy()
+
+# Load the trained model
+model = CNNModel()
+model.load_state_dict(torch.load('D:/Repo/shared_repo/RealChatGPT/model/real_chatgpt.pth'))
+model.eval()
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
 cap = cv2.VideoCapture(0)
 
 if (cap.isOpened()):
@@ -43,12 +71,9 @@ while (True):
     cv2.imwrite(filename='img.jpg', img=original)
     image = Image.open('img.jpg')
 
-    # Display the predictions
-    # print("ImageNet ID: {}, Label: {}".format(inID, label))
     prediction = import_and_predict(image, model)
-    #print(prediction)
 
-    confidence_threshold = 0.51  # Adjusted based on model evaluation
+    confidence_threshold = 0.5  # Adjusted based on model evaluation
 
     max_confidence_score = np.max(prediction)
     predicted_class_idx = np.argmax(prediction)
@@ -68,7 +93,7 @@ while (True):
     cv2.imshow("Classification", original)
 
     if (cv2.waitKey(1) & 0xFF == ord('q')):
-        break;
+        break
 
 cap.release()
 frame = None
