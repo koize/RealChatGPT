@@ -29,7 +29,7 @@ def import_and_predict(image_data, model):
 model = tf.keras.models.load_model('D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.h5')
 
     
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 if (cap.isOpened()):
     print("Camera OK")

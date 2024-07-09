@@ -115,14 +115,15 @@ model.add(Dense(2, activation="softmax"))
 model.summary()
 
 opt = Adam(learning_rate=0.0001)  # Adjusted learning rate
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='min', restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min', restore_best_weights=True)
 
 model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 tf.keras.models.save_model(model, 'D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.h5')
 class_weights = compute_class_weight('balanced', classes=np.unique(train_labels), y=train_labels)
 class_weights_dict = dict(enumerate(class_weights))
-class_weights_dict = {0: 1.05, 1: 1.0}  # Manually set class weights to 1.0 for both classes
-history = model.fit(x_train, y_train, epochs=500, class_weight=class_weights_dict, validation_data=(x_val, y_val), callbacks=[early_stopping])
+#class_weights_dict = {0: 1.05, 1: 1.0}  # Manually set class weights to 1.0 for both classes
+#class_weights_dict = {0: 1, 1: 4.76}  # Manually set class weights to 1.0 for both classes
+history = model.fit(x_train, y_train, epochs=200, class_weight=class_weights_dict, validation_data=(x_val, y_val), callbacks=[early_stopping])
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
@@ -144,11 +145,14 @@ plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
 
-predictions = model.predict(x_val)
-predictions = predictions.reshape(1,-1)[0]
-predictions = model.predict(test_images)
-predicted_classes = np.argmax(predictions, axis=1)
-true_classes = test_labels
+# Corrected code for generating predictions and evaluating on the correct dataset
+predictions = model.predict(x_val)  # Predict on validation set
+predicted_classes = np.argmax(predictions, axis=1)  # Get predicted classes
+true_classes = y_val  # Use validation labels as true classes for comparison
+
+# Generate confusion matrix for validation set predictions
 cm = confusion_matrix(true_classes, predicted_classes)
-sns.heatmap(cm, annot=True, fmt='d')
-print(classification_report(y_val, predictions, target_names = ['Apple (Class 0)','Watermelon (Class 1)']))
+sns.heatmap(cm, annot=True, fmt='d')  # Plot confusion matrix
+
+# Corrected classification report to compare validation predictions with validation labels
+print(classification_report(true_classes, predicted_classes, target_names=['Apple (Class 0)', 'Watermelon (Class 1)']))
