@@ -57,9 +57,9 @@ transform = transforms.Compose([
 
 # Create datasets
 labels = ['apple', 'watermelon']
-train_dataset = CustomDataset('D:/Repo/shared_repo/RealChatGPT/dataset/train/', labels, transform=transform)
-val_dataset = CustomDataset('D:/Repo/shared_repo/RealChatGPT/dataset/val/', labels, transform=transform)
-test_dataset = CustomDataset('D:/Repo/shared_repo/RealChatGPT/dataset/test/', labels, transform=transform)
+train_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/test', labels, transform=transform)
+val_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/val/', labels, transform=transform)
+test_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/test/', labels, transform=transform)
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -159,7 +159,7 @@ for epoch in range(num_epochs):
     
     if val_epoch_loss < best_val_loss:
         best_val_loss = val_epoch_loss
-        torch.save(model.state_dict(), 'D:/Repo/shared_repo/RealChatGPT/model/real_chatgpt.pth')
+        torch.save(model.state_dict(), 'C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/model/real_chatgpt.pth')
         early_stopping_counter = 0
     else:
         early_stopping_counter += 1
