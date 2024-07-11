@@ -95,10 +95,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Assuming your labels are numerical and continuous starting from 0
 classes = np.unique(train_dataset.labels)
+print (classes)
 # Calculate class weights
 class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
 print (class_weights)
-class_weights = [0.26, 1.42167256, 1.44033413]
+class_weights = [0.10, 1.42167256, 1.44033413]
 # class_weights = [0.4, 36]
 # Convert class weights to a tensor
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)

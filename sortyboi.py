@@ -16,30 +16,38 @@ def split_photos(input_folder, output_folders, split_ratio):
     # Calculate the number of files for each split
     total_files = len(all_files)
     train_count = int(total_files * split_ratio[0])
-    test_count = int(total_files * split_ratio[1])
-    val_count = total_files - train_count - test_count
+    val_count = int(total_files * split_ratio[1])
+    test_count = total_files - train_count - val_count
     
     # Split the files into the respective folders
     train_files = all_files[:train_count]
-    test_files = all_files[train_count:train_count + test_count]
-    val_files = all_files[train_count + test_count:]
+    val_files = all_files[train_count:train_count + val_count]
+    test_files = all_files[train_count + val_count:]
     
-    # Copy the files to the respective folders
+    # Copy the files to the respective folders if they don't already exist there
     for f in train_files:
-        shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[0], f))
-    for f in test_files:
-        shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[1], f))
+        if not os.path.exists(os.path.join(output_folders[0], f)):
+            shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[0], f))
     for f in val_files:
-        shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[2], f))
+        if not os.path.exists(os.path.join(output_folders[1], f)):
+            shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[1], f))
+    for f in test_files:
+        if not os.path.exists(os.path.join(output_folders[2], f)):
+            shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[2], f))
 
 # Define the input and output folders and the split ratio
-input_folder = r'D:/SP/mlai/projek/PROPOGANDA/dataset/new/banana'
-output_folders = [
-    r'D:/SP/mlai/projek/PROPOGANDA/dataset/test/banana',
-    r'D:/SP/mlai/projek/PROPOGANDA/dataset/train/banana',
-    r'D:/SP/mlai/projek/PROPOGANDA/dataset/val/banana'
-]
+input_base_folder = 'sorting'
+output_base_folder = 'dataset'
+
+fruits = ['apple', 'watermelon', 'banana']
 split_ratio = [0.70, 0.15, 0.15]
 
-# Call the function to split the photos
-split_photos(input_folder, output_folders, split_ratio)
+# Process each fruit folder
+for fruit in fruits:
+    input_folder = os.path.join(input_base_folder, fruit)
+    output_folders = [
+        os.path.join(output_base_folder, 'train', fruit),
+        os.path.join(output_base_folder, 'val', fruit),
+        os.path.join(output_base_folder, 'test', fruit)
+    ]
+    split_photos(input_folder, output_folders, split_ratio)
