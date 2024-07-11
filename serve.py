@@ -21,7 +21,7 @@ class CNNModel(nn.Module):
         self.dropout = nn.Dropout(0.4)
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(64 * 12 * 12, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc2 = nn.Linear(128, 3)
         
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -51,7 +51,7 @@ def import_and_predict(image_data, model):
 
 # Load the trained model
 model = CNNModel()
-model.load_state_dict(torch.load('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/model/real_chatgpt.pth'))
+model.load_state_dict(torch.load('D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.pth'))
 model.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -73,7 +73,7 @@ while (True):
 
     prediction = import_and_predict(image, model)
 
-    confidence_threshold = 0.5  # Adjusted based on model evaluation
+    confidence_threshold = 0.7  # Adjusted based on model evaluation
 
     max_confidence_score = np.max(prediction)
     predicted_class_idx = np.argmax(prediction)
@@ -85,8 +85,10 @@ while (True):
         predict = "apple!"
     elif predicted_class_idx == 1:
         predict = "watermelon!"
+    elif predicted_class_idx == 2:
+        predict = "banana!"
     else:
-        predict = "unknown"  # Fallback case, though it should not be reached
+        predict = "really unknown"  # Fallback case, though it should not be reached
 
     cv2.putText(original, predict, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
     cv2.putText(original, f"{max_confidence_score*100:.2f}%", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)

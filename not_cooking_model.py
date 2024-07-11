@@ -56,10 +56,10 @@ transform = transforms.Compose([
 ])
 
 # Create datasets
-labels = ['apple', 'watermelon']
-train_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/test', labels, transform=transform)
-val_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/val/', labels, transform=transform)
-test_dataset = CustomDataset('C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/dataset/test/', labels, transform=transform)
+labels = ['apple', 'watermelon', 'banana']
+train_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/test', labels, transform=transform)
+val_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/val/', labels, transform=transform)
+test_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/test/', labels, transform=transform)
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -67,6 +67,7 @@ val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Define the model
+
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
@@ -77,7 +78,7 @@ class CNNModel(nn.Module):
         self.dropout = nn.Dropout(0.4)
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(64 * 12 * 12, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc2 = nn.Linear(128, 3)
         
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -90,13 +91,26 @@ class CNNModel(nn.Module):
         return x
 
 model = CNNModel()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+# Assuming your labels are numerical and continuous starting from 0
+classes = np.unique(train_dataset.labels)
+# Calculate class weights
+class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
+print (class_weights)
+class_weights = [0.56, 1.42167256, 1.44033413]
+# class_weights = [0.4, 36]
+# Convert class weights to a tensor
+class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
+
+# Define loss function with class weights
+criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+
+# Continue with your training as before
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training the model
-num_epochs = 500
+num_epochs = 200
 early_stopping_patience = 10
 early_stopping_counter = 0
 best_val_loss = float('inf')
@@ -106,7 +120,6 @@ val_acc = []
 train_loss = []
 val_loss = []
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 for epoch in range(num_epochs):
@@ -159,7 +172,7 @@ for epoch in range(num_epochs):
     
     if val_epoch_loss < best_val_loss:
         best_val_loss = val_epoch_loss
-        torch.save(model.state_dict(), 'C:/Users/ledoi/Documents/work/MLAI/RealChatGPT/model/real_chatgpt.pth')
+        torch.save(model.state_dict(), 'D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.pth')
         early_stopping_counter = 0
     else:
         early_stopping_counter += 1

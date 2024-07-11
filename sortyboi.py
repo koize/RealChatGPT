@@ -33,11 +33,11 @@ def split_photos(input_folder, output_folders, split_ratio):
         shutil.copy(os.path.join(input_folder, f), os.path.join(output_folders[2], f))
 
 # Define the input and output folders and the split ratio
-input_folder = r'D:/Repo/shared_repo/RealChatGPT/sorting'
+input_folder = r'D:/SP/mlai/projek/PROPOGANDA/dataset/new/banana'
 output_folders = [
-    r'D:/Repo/shared_repo/RealChatGPT/dataset/test/apple',
-    r'D:/Repo/shared_repo/RealChatGPT/dataset/train/apple',
-    r'D:/Repo/shared_repo/RealChatGPT/dataset/val/apple'
+    r'D:/SP/mlai/projek/PROPOGANDA/dataset/test/banana',
+    r'D:/SP/mlai/projek/PROPOGANDA/dataset/train/banana',
+    r'D:/SP/mlai/projek/PROPOGANDA/dataset/val/banana'
 ]
 split_ratio = [0.70, 0.15, 0.15]
 
