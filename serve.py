@@ -51,7 +51,7 @@ def import_and_predict(image_data, model):
 
 # Load the trained model
 model = CNNModel()
-model.load_state_dict(torch.load('D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.pth'))
+model.load_state_dict(torch.load(os.path.join('model', 'real_chatgpt.pth')))
 model.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

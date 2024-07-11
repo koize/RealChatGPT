@@ -57,9 +57,9 @@ transform = transforms.Compose([
 
 # Create datasets
 labels = ['apple', 'watermelon', 'banana']
-train_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/test', labels, transform=transform)
-val_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/val/', labels, transform=transform)
-test_dataset = CustomDataset('D:/SP/mlai/projek/PROPOGANDA/dataset/test/', labels, transform=transform)
+train_dataset = CustomDataset(os.path.join('dataset', 'train'), labels, transform=transform)
+val_dataset = CustomDataset(os.path.join('dataset', 'val'), labels, transform=transform)
+test_dataset = CustomDataset(os.path.join('dataset', 'test'), labels, transform=transform)
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -98,7 +98,7 @@ classes = np.unique(train_dataset.labels)
 # Calculate class weights
 class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
 print (class_weights)
-class_weights = [0.56, 1.42167256, 1.44033413]
+class_weights = [0.26, 1.42167256, 1.44033413]
 # class_weights = [0.4, 36]
 # Convert class weights to a tensor
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
@@ -172,7 +172,7 @@ for epoch in range(num_epochs):
     
     if val_epoch_loss < best_val_loss:
         best_val_loss = val_epoch_loss
-        torch.save(model.state_dict(), 'D:/SP/mlai/projek/PROPOGANDA/model/real_chatgpt.pth')
+        torch.save(model.state_dict(), os.path.join('model', 'real_chatgpt.pth'))
         early_stopping_counter = 0
     else:
         early_stopping_counter += 1
