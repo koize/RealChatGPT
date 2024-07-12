@@ -22,7 +22,7 @@ def resize_images_in_place(folder, new_width):
                 print(f'Resized and overwritten {filename} in {root}')
 
 # Usage
-folder = 'dataset'  # Main folder containing images and subfolders
+folder = 'dataset/new'  # Main folder containing images and subfolders
 new_width = 800  # Desired new width in pixels
 
 resize_images_in_place(folder,new_width)

@@ -99,8 +99,8 @@ print (classes)
 # Calculate class weights
 class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
 print (class_weights)
-class_weights = [0.10, 1.42167256, 1.44033413]
-# class_weights = [0.4, 36]
+#class_weights = [0.10, 1.42167256, 1.44033413]
+class_weights = [0.10, 1.65607345, 0.96980976]
 # Convert class weights to a tensor
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
 

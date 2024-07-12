@@ -57,7 +57,7 @@ model.eval()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 if (cap.isOpened()):
     print("Camera OK")
