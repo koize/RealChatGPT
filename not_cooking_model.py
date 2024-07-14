@@ -10,6 +10,7 @@ from torchvision import transforms
 
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.metrics import classification_report, confusion_matrix
+from torchsummary import summary
 
 import cv2
 import os
@@ -72,22 +73,39 @@ class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, 3, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
-        self.dropout = nn.Dropout(0.4)
+        
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
+        
+        self.conv3 = nn.Conv2d(64, 128, 3, padding=1)
+        self.bn3 = nn.BatchNorm2d(128)
+        
+        self.conv4 = nn.Conv2d(128, 256, 3, padding=1)
+        self.bn4 = nn.BatchNorm2d(256)
+        
+        self.dropout = nn.Dropout(0.5)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(64 * 12 * 12, 128)
-        self.fc2 = nn.Linear(128, 3)
+        
+        self.fc1 = nn.Linear(256 * 6 * 6, 512)
+        self.fc2 = nn.Linear(512, 128)
+        self.fc3 = nn.Linear(128, 3)
         
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = self.pool(F.relu(self.bn3(self.conv3(x))))
+        x = self.pool(F.relu(self.bn4(self.conv4(x))))
+        
         x = self.dropout(x)
         x = self.flatten(x)
+        
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        
         return x
 
 model = CNNModel()
@@ -99,9 +117,11 @@ print (classes)
 # Calculate class weights
 class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
 print (class_weights)
+#adjust class weights to penalise the over-represented class
 #class_weights = [0.10, 1.42167256, 1.44033413]
-class_weights = [0.10, 1.65607345, 0.96980976]
-# class_weights = [0.10, 2, 0.96980976]
+#class_weights = [0.50, 1.45, 0.40]
+class_weights = [0.8, 1.15, 0.9]
+
 
 # Convert class weights to a tensor
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
@@ -200,3 +220,54 @@ plt.plot(epochs_range, val_loss, label='Validation Loss')
 plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
+
+model.eval()
+
+# Initialize variables to track test performance
+test_loss = 0.0
+test_correct = 0
+test_total = 0
+
+# No gradient needed for evaluation
+with torch.no_grad():
+    for test_images, test_labels in test_loader:
+        test_images, test_labels = test_images.to(device), test_labels.to(device)
+        
+        # Forward pass
+        test_outputs = model(test_images)
+        loss = criterion(test_outputs, test_labels)
+        
+        # Update test loss
+        test_loss += loss.item()
+        
+        # Calculate accuracy
+        _, predicted = torch.max(test_outputs.data, 1)
+        test_total += test_labels.size(0)
+        test_correct += (predicted == test_labels).sum().item()
+
+# Calculate average loss and accuracy
+test_loss /= len(test_loader)
+test_accuracy = test_correct / test_total
+
+print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}')
+
+# Optional: Generate a confusion matrix
+all_preds = []
+all_targets = []
+with torch.no_grad():
+    for test_images, test_labels in test_loader:
+        test_images, test_labels = test_images.to(device), test_labels.to(device)
+        outputs = model(test_images)
+        _, preds = torch.max(outputs, 1)
+        all_preds.extend(preds.cpu().numpy())
+        all_targets.extend(test_labels.cpu().numpy())
+
+conf_matrix = confusion_matrix(all_targets, all_preds)
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.title('Confusion Matrix')
+plt.show()
+# Display the summary
+#  (3, 100, 100) refers to the input size, with the input images being of 100x100 with 3 channels (RGB).
+summary(model,(3,100,100))

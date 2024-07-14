@@ -8,3 +8,4 @@ scikit-learn==1.5.1
 opencv-python==4.10.0.84
 numpy==1.26.4
 Pillow==10.4.0
+torchsummary==1.5.1
