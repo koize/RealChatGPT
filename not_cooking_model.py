@@ -93,14 +93,13 @@ class CNNModel(nn.Module):
 model = CNNModel()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Assuming your labels are numerical and continuous starting from 0
 classes = np.unique(train_dataset.labels)
 print (classes)
 # Calculate class weights
 class_weights = compute_class_weight(class_weight='balanced', classes=classes, y=train_dataset.labels)
 print (class_weights)
 #class_weights = [0.10, 1.42167256, 1.44033413]
-class_weights = [0.10, 1.65607345, 0.96980976]
+class_weights = [0.10, 1.65607345, 0.96980976] # best performing class weights
 # class_weights = [0.10, 2, 0.96980976]
 
 # Convert class weights to a tensor
@@ -109,10 +108,10 @@ class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
 # Define loss function with class weights
 criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
 
-# Continue with your training as before
+# Optimizer
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-# Training the model
+# Parameters for model training
 num_epochs = 200
 early_stopping_patience = 10
 early_stopping_counter = 0
