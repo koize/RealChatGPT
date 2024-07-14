@@ -120,7 +120,7 @@ print (class_weights)
 #adjust class weights to penalise the over-represented class
 #class_weights = [0.10, 1.42167256, 1.44033413]
 #class_weights = [0.50, 1.45, 0.40]
-class_weights = [0.8, 1.15, 0.9]
+class_weights = [1, 1.25, 1]
 
 
 # Convert class weights to a tensor
@@ -133,7 +133,7 @@ criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training the model
-num_epochs = 200
+num_epochs = 40
 early_stopping_patience = 10
 early_stopping_counter = 0
 best_val_loss = float('inf')
@@ -250,24 +250,6 @@ test_loss /= len(test_loader)
 test_accuracy = test_correct / test_total
 
 print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}')
-
-# Optional: Generate a confusion matrix
-all_preds = []
-all_targets = []
-with torch.no_grad():
-    for test_images, test_labels in test_loader:
-        test_images, test_labels = test_images.to(device), test_labels.to(device)
-        outputs = model(test_images)
-        _, preds = torch.max(outputs, 1)
-        all_preds.extend(preds.cpu().numpy())
-        all_targets.extend(test_labels.cpu().numpy())
-
-conf_matrix = confusion_matrix(all_targets, all_preds)
-sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
-plt.xlabel('Predicted Labels')
-plt.ylabel('True Labels')
-plt.title('Confusion Matrix')
-plt.show()
 # Display the summary
 #  (3, 100, 100) refers to the input size, with the input images being of 100x100 with 3 channels (RGB).
 summary(model,(3,100,100))
